@@ -3,35 +3,23 @@ name: CI & Deploy to Railway
 
 on:
   push:
-    branches:
-      - main
-
-permissions:
-  contents: read
-  id-token: write
+    branches: [ main ]
 
 jobs:
   test:
     name: 🧪 Run Tests
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Setup Python 3.12
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.12'
-
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with: { python-version: '3.12' }
       - name: Install dependencies & package
         run: |
           pip install --upgrade pip
           pip install -r requirements.txt
           pip install -e .
-
       - name: Expose project root to PYTHONPATH
         run: echo "PYTHONPATH=${{ github.workspace }}" >> $GITHUB_ENV
-
       - name: Run pytest
         run: pytest -q
 
@@ -39,27 +27,27 @@ jobs:
     name: 🚀 Deploy to Railway
     needs: test
     runs-on: ubuntu-latest
+    env:
+      RAILWAY_TOKEN:       ${{ secrets.RAILWAY_TOKEN }}
+      RAILWAY_PROJECT_ID:  ${{ secrets.RAILWAY_PROJECT_ID }}
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
       - name: Setup Node.js (for Railway CLI)
         uses: actions/setup-node@v3
-        with:
-          node-version: '18'
+        with: { node-version: '18' }
 
       - name: Install Railway CLI
         run: npm install -g @railway/cli
 
-      - name: Authenticate Railway CLI
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        run: |
-          echo "$RAILWAY_TOKEN" > ~/.railway_token
-          railway token set --path ~/.railway_token
+      - name: Clear any existing Railway state
+        run: rm -rf ~/.railway
 
-      - name: Deploy to Railway
-        run: railway up --service nono
+      - name: Deploy service "nono"
         env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_TOKEN:      ${{ secrets.RAILWAY_TOKEN }}
           RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
+        run: |
+          # Ensure CLI uses the token and project ID from environment or railway.json
+          railway up --service nono
