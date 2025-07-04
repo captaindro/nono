@@ -36,7 +36,7 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     env:
-      # Utilisé pour l’authentification CLI Railway
+      # Utilisé pour l’authentification CLI Railway ok
       RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
       # Projetez automatiquement la bonne application
       RAILWAY_PROJECT: ${{ secrets.RAILWAY_PROJECT_ID }}
