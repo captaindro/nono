@@ -1,53 +1,33 @@
-# .github/workflows/deploy.yml
-name: CI & Deploy to Railway
+name: 🧪 CI Tests
 
 on:
   push:
     branches: [ main ]
 
+permissions:
+  contents: read
+
 jobs:
   test:
-    name: 🧪 Run Tests
+    name: Run pytest
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
-        with: { python-version: '3.12' }
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
       - name: Install dependencies & package
         run: |
           pip install --upgrade pip
           pip install -r requirements.txt
           pip install -e .
+
       - name: Expose project root to PYTHONPATH
         run: echo "PYTHONPATH=${{ github.workspace }}" >> $GITHUB_ENV
+
       - name: Run pytest
         run: pytest -q
-
-  deploy:
-    name: 🚀 Deploy to Railway
-    needs: test
-    runs-on: ubuntu-latest
-    env:
-      RAILWAY_TOKEN:       ${{ secrets.RAILWAY_TOKEN }}
-      RAILWAY_PROJECT_ID:  ${{ secrets.RAILWAY_PROJECT_ID }}
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Setup Node.js (for Railway CLI)
-        uses: actions/setup-node@v3
-        with: { node-version: '18' }
-
-      - name: Install Railway CLI
-        run: npm install -g @railway/cli
-
-      - name: Clear any existing Railway state
-        run: rm -rf ~/.railway
-
-      - name: Deploy service "nono"
-        env:
-          RAILWAY_TOKEN:      ${{ secrets.RAILWAY_TOKEN }}
-          RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
-        run: |
-          # Ensure CLI uses the token and project ID from environment or railway.json
-          railway up --service nono
