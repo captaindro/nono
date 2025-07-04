@@ -1,25 +1,29 @@
-import os
-from dotenv import load_dotenv
-import openai
+import logging
+import time
 
-load_dotenv()
-
-openai.api_key = os.getenv("OPENAI_API_KEY")
+def setup_logging():
+    logging.basicConfig(
+        level=logging.INFO,
+        format='[%(asctime)s] %(levelname)s %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S',
+        handlers=[logging.StreamHandler()]
+    )
 
 def main():
-    print("=== Démarrage du bot NONO ===")
+    setup_logging()
+    logging.info("🚀 Démarrage du bot NONO")
 
+    # Exemple d'initialisation RPC/WebSocket
     try:
-        response = openai.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {"role": "system", "content": "Tu es un assistant pour un bot de sniping Solana."},
-                {"role": "user", "content": "Démarre la session."}
-            ]
-        )
-        print("OpenAI response:", response.choices[0].message.content)
+        # Remplace par ta vraie initialisation
+        logging.info("🔗 Connexion RPC et WebSocket établie")
     except Exception as e:
-        print("Erreur OpenAI:", e)
+        logging.error(f"❌ Erreur de connexion : {e}")
+
+    # Heartbeat toutes les 30 secondes pour indiquer que le bot tourne
+    while True:
+        logging.info("💓 Bot en vie...")
+        time.sleep(30)
 
 if __name__ == "__main__":
     main()
