@@ -1,3 +1,4 @@
+# .github/workflows/deploy.yml
 name: CI & Deploy to Railway
 
 on:
@@ -19,7 +20,10 @@ jobs:
           python-version: '3.12'
 
       - name: Install dependencies
-        run: pip install --upgrade pip && pip install -r requirements.txt
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -e .           # <— installe votre package nono
 
       - name: Run pytest
         run: pytest -q
