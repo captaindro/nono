@@ -1,4 +1,4 @@
-name: Deploy to Railway
+name: CI & Deploy to Railway
 
 on:
   push:
@@ -6,7 +6,27 @@ on:
       - main
 
 jobs:
+  test:
+    name: 🧪 Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install --upgrade pip && pip install -r requirements.txt
+
+      - name: Run pytest
+        run: pytest -q
+
   deploy:
+    name: 🚀 Deploy to Railway
+    needs: test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -16,6 +36,6 @@ jobs:
         run: npm install -g @railway/cli
 
       - name: Deploy to Railway
-        run: railway up --service nono
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: railway up --service nono
