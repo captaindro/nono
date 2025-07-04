@@ -42,9 +42,12 @@ jobs:
       - name: Install Railway CLI
         run: curl -sSL https://railway.app/install.sh | sh
 
-      - name: Link to Railway project
+      - name: Login to Railway (CI)
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: railway login --token "$RAILWAY_TOKEN"
+
+      - name: Link to Railway project
         run: railway link --project d594651f-0024-4331-a738-6ef98b1a3405
 
       - name: Deploy to Railway
