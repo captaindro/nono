@@ -37,7 +37,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-      RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
 
     steps:
       - name: Checkout code
@@ -46,9 +45,5 @@ jobs:
       - name: Install Railway CLI
         run: curl -sSL https://railway.app/install.sh | sh
 
-      - name: Deploy service "nono" to Railway
-        run: |
-          # On passe directement le project ID et le nom de service
-          railway up --project $RAILWAY_PROJECT_ID --service nono
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+      - name: Deploy service "nono"
+        run: railway up --service nono
