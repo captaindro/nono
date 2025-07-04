@@ -19,11 +19,11 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install dependencies
+      - name: Install dependencies & package
         run: |
           pip install --upgrade pip
           pip install -r requirements.txt
-          pip install -e .           # <— installe votre package nono
+          pip install -e .     # installe votre package 'nono' depuis setup.py
 
       - name: Run pytest
         run: pytest -q
