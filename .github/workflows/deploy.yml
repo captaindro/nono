@@ -40,19 +40,17 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Install Railway CLI
-        run: npm install -g @railway/cli
+        run: curl -sSL https://railway.app/install.sh | sh
 
       - name: Login to Railway
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        run: railway login --apiKey $RAILWAY_TOKEN
+        run: railway login
 
-      - name: Link to Railway Project
+      - name: Link to Railway project
         env:
           RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
         run: railway link --project $RAILWAY_PROJECT_ID
 
       - name: Deploy to Railway
         run: railway up --service nono
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
