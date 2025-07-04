@@ -1,4 +1,3 @@
-# .github/workflows/deploy.yml
 name: CI & Deploy to Railway
 
 on:
@@ -11,11 +10,9 @@ jobs:
     name: 🧪 Run Tests
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-      - name: Setup Python 3.12
-        uses: actions/setup-python@v4
+      - uses: actions/setup-python@v4
         with:
           python-version: '3.12'
 
@@ -39,11 +36,12 @@ jobs:
       RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
       - name: Install Railway CLI
         run: curl -sSL https://railway.app/install.sh | sh
 
       - name: Deploy service "nono"
         run: railway up --service nono
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
