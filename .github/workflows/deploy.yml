@@ -6,6 +6,10 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
   test:
     name: 🧪 Run Tests
@@ -35,7 +39,6 @@ jobs:
     name: 🚀 Deploy to Railway
     needs: test
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -48,10 +51,15 @@ jobs:
       - name: Install Railway CLI
         run: npm install -g @railway/cli
 
+      - name: Authenticate Railway CLI
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          echo "$RAILWAY_TOKEN" > ~/.railway_token
+          railway token set --path ~/.railway_token
+
       - name: Deploy to Railway
-        uses: railwayapp/action-deploy@v1
-        with:
-          # These are the two secrets you set in GitHub
-          railwayToken: ${{ secrets.RAILWAY_TOKEN }}
-          projectId:    ${{ secrets.RAILWAY_PROJECT_ID }}
-          serviceName:  nono
+        run: railway up --service nono
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
