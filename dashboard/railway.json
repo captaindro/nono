@@ -1,0 +1,15 @@
+{
+  "$schema": "https://railway.com/railway.schema.json",
+  "services": [
+    {
+      "name": "nono-bot",
+      "path": ".",
+      "startCommand": "./start.sh"
+    },
+    {
+      "name": "nono-dashboard",
+      "path": "dashboard",
+      "startCommand": "uvicorn app:app --host 0.0.0.0 --port 3000"
+    }
+  ]
+}

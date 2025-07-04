@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Dashboard Bot NONO</title>
+  <style>
+    body { font-family: sans-serif; margin: 2rem; }
+    button { margin-right: 1rem; }
+    #log { height: 300px; overflow-y: scroll; border: 1px solid #ccc; padding: 1rem; }
+  </style>
+</head>
+<body>
+  <h1>Bot NONO Dashboard</h1>
+  <button onclick="startBot()">Start Bot</button>
+  <button onclick="stopBot()">Stop Bot</button>
+  <h2>Logs & Events</h2>
+  <div id="log"></div>
+
+  <script>
+    const logEl = document.getElementById("log");
+    const ws = new WebSocket(`ws://${location.host}/ws`);
+    ws.onmessage = (evt) => {
+      const p = document.createElement("p");
+      p.textContent = evt.data;
+      logEl.appendChild(p);
+      logEl.scrollTop = logEl.scrollHeight;
+    };
+
+    function append(msg) {
+      const p = document.createElement("p");
+      p.textContent = msg;
+      logEl.appendChild(p);
+    }
+
+    async function startBot() {
+      const res = await fetch("/bot/start", { method: "POST" });
+      const data = await res.json();
+      append(`Start request → ${data.status}`);
+    }
+
+    async function stopBot() {
+      const res = await fetch("/bot/stop", { method: "POST" });
+      const data = await res.json();
+      append(`Stop request → ${data.status}`);
+    }
+  </script>
+</body>
+</html>
