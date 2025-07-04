@@ -23,7 +23,7 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install -r requirements.txt
-          pip install -e .     # installe votre package nono
+          pip install -e .
 
       - name: Expose project root to PYTHONPATH
         run: echo "PYTHONPATH=${{ github.workspace }}" >> $GITHUB_ENV
@@ -42,7 +42,17 @@ jobs:
       - name: Install Railway CLI
         run: npm install -g @railway/cli
 
-      - name: Deploy to Railway
+      - name: Login to Railway
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: railway login --apiKey $RAILWAY_TOKEN
+
+      - name: Link to Railway Project
+        env:
+          RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
+        run: railway link --project $RAILWAY_PROJECT_ID
+
+      - name: Deploy to Railway
         run: railway up --service nono
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
