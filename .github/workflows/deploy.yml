@@ -46,14 +46,9 @@ jobs:
       - name: Install Railway CLI
         run: curl -sSL https://railway.app/install.sh | sh
 
-      - name: Login to Railway
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+      - name: Deploy service "nono" nono
         run: |
-          echo "$RAILWAY_TOKEN" | railway login
-
-      - name: Deploy service "nono"
-        run: railway up --service nono
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-          RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
+          railway up \
+            --project $RAILWAY_PROJECT_ID \
+            --service nono \
+            --token $RAILWAY_TOKEN
