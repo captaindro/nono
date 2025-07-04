@@ -43,10 +43,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Install Railway CLI
-        run: curl -sSL https://railway.app/install.sh | sh
+      - name: Install Node.js (required for Railway CLI)
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
 
-      - name: Deploy service "nono" nono
+      - name: Install Railway CLI (via npm)
+        run: npm install -g @railway/cli
+
+      - name: Deploy service "nono"
         run: |
           railway up \
             --project $RAILWAY_PROJECT_ID \
