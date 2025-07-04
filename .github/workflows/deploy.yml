@@ -36,10 +36,8 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     env:
-      # Utilisé pour l’authentification CLI Railway ok
       RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-      # Projetez automatiquement la bonne application
-      RAILWAY_PROJECT: ${{ secrets.RAILWAY_PROJECT_ID }}
+      RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
 
     steps:
       - name: Checkout code
@@ -48,5 +46,14 @@ jobs:
       - name: Install Railway CLI
         run: curl -sSL https://railway.app/install.sh | sh
 
+      - name: Login to Railway
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          echo "$RAILWAY_TOKEN" | railway login
+
       - name: Deploy service "nono"
         run: railway up --service nono
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
