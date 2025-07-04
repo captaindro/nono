@@ -1,3 +1,4 @@
+# .github/workflows/deploy.yml
 name: CI & Deploy to Railway
 
 on:
@@ -10,9 +11,11 @@ jobs:
     name: 🧪 Run Tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      - uses: actions/setup-python@v4
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v4
         with:
           python-version: '3.12'
 
@@ -33,15 +36,17 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     env:
+      # Utilisé pour l’authentification CLI Railway
       RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+      # Projetez automatiquement la bonne application
+      RAILWAY_PROJECT: ${{ secrets.RAILWAY_PROJECT_ID }}
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
       - name: Install Railway CLI
         run: curl -sSL https://railway.app/install.sh | sh
 
       - name: Deploy service "nono"
         run: railway up --service nono
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
