@@ -32,28 +32,25 @@ jobs:
         run: pytest -q
 
   deploy:
-    name: 🚀 ----Deploy to Railway
+    name: 🚀 Deploy to Railway
     needs: test
     runs-on: ubuntu-latest
-    env:
-      RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-      RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Install Node.js (required for Railway CLI)
+      - name: Install Node.js (for Railway CLI)
         uses: actions/setup-node@v3
         with:
           node-version: '18'
 
-      - name: Install Railway CLI (via npm)
+      - name: Install Railway CLI
         run: npm install -g @railway/cli
 
-      - name: Deploy service "nono"
+      - name: Deploy service “nono”
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
-          railway up \
-            --project $RAILWAY_PROJECT_ID \
-            --service nono \
-            --token $RAILWAY_TOKEN
+          # The CLI will read projectId & projectToken from railway.json at the repo root
+          railway up --service nono
