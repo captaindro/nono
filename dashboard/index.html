@@ -4,7 +4,6 @@
   <meta charset="utf-8">
   <title>Dashboard Bot NONO</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -13,7 +12,8 @@
       padding: 2rem; display: flex; flex-direction: column; align-items: center;
     }
     h1 { margin-bottom: 1rem; font-size: 2rem; font-weight: 600; }
-    .controls { display: flex; gap: 1rem; margin-bottom: 2rem; }
+    .controls, .stats, .params { width: 100%; max-width: 800px; margin-bottom: 2rem; }
+    .controls { display: flex; gap: 1rem; }
     button {
       padding: 0.75rem 1.5rem; border: none; border-radius: 0.5rem;
       background-color: #0071e3; color: #fff; font-size: 1rem; cursor: pointer;
@@ -22,39 +22,137 @@
     button:hover { background-color: #005bb5; }
     button:disabled { background-color: #c7c7cc; cursor: default; }
     #log {
-      width: 100%; max-width: 800px; height: 400px; background: #fff;
+      width: 100%; max-width: 800px; height: 200px; background: #fff;
       border-radius: 0.75rem; box-shadow: 0 4px 12px rgba(0,0,0,0.05);
       overflow-y: auto; padding: 1rem; font-family: Menlo, monospace; font-size: 0.9rem;
       color: #2c2c2e;
+      margin-bottom: 2rem;
     }
-    #log p { margin-bottom: 0.5rem; }
+    table { width: 100%; border-collapse: collapse; margin-top: 0.5rem; }
+    th, td { border: 1px solid #ddd; padding: 0.5rem; text-align: center; }
+    th { background-color: #f0f0f5; }
+    .section { background: #fff; padding: 1rem; border-radius: 0.75rem; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
+    .section + .section { margin-top: 1.5rem; }
+    label { display: block; margin-top: 0.5rem; }
+    input { width: 100%; padding: 0.5rem; margin-top: 0.25rem; border: 1px solid #ccc; border-radius: 0.25rem; }
   </style>
 </head>
 <body>
   <h1>Bot NONO Dashboard</h1>
-  <div class="controls">
+
+  <div class="section controls">
     <button id="startBtn" onclick="startBot()">Démarrer le bot</button>
     <button id="stopBtn" onclick="stopBot()" disabled>Arrêter le bot</button>
   </div>
-  <div id="log"></div>
+
+  <div id="log" class="section"></div>
+
+  <div class="section stats">
+    <h2>📊 Statistiques</h2>
+    <table>
+      <tr><th>Total Snipes</th><th>Réussites</th><th>Échecs</th><th>PnL Total (SOL)</th></tr>
+      <tr id="stats-row">
+        <td>–</td><td>–</td><td>–</td><td>–</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="section params">
+    <h2>⚙️ Paramètres Dynamiques</h2>
+    <form onsubmit="updateParams(event)">
+      <label>
+        Take Profit multiplier
+        <input type="number" id="tpMul" step="0.01" required>
+      </label>
+      <label>
+        Stop Loss multiplier
+        <input type="number" id="slMul" step="0.01" required>
+      </label>
+      <label>
+        Slippage (bps)
+        <input type="number" id="slippage" step="1" required>
+      </label>
+      <label>
+        Seuil liquidité (SOL)
+        <input type="number" id="liqTh" step="0.1" required>
+      </label>
+      <button type="submit">Mettre à jour</button>
+    </form>
+  </div>
+
   <script>
     const logEl = document.getElementById("log"),
           startBtn = document.getElementById("startBtn"),
-          stopBtn  = document.getElementById("stopBtn");
+          stopBtn  = document.getElementById("stopBtn"),
+          tpMul     = document.getElementById("tpMul"),
+          slMul     = document.getElementById("slMul"),
+          slippage  = document.getElementById("slippage"),
+          liqTh     = document.getElementById("liqTh"),
+          statsRow  = document.getElementById("stats-row");
+
     const ws = new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host+'/ws');
-    ws.onopen = ()=>append('🔌 WebSocket connecté');
-    ws.onclose= ()=>append('⚠️ WebSocket déconnecté');
-    ws.onmessage=evt=>append(evt.data);
-    function append(t){ const p=document.createElement('p'); p.textContent=t; logEl.appendChild(p); logEl.scrollTop=logEl.scrollHeight; }
+    ws.onmessage = evt => {
+      const msg = evt.data;
+      if(msg.startsWith("STATS ")) {
+        const s = JSON.parse(msg.slice(6).replace(/'/g,'"'));
+        statsRow.innerHTML = `<td>${s.total_snipes}</td><td>${s.successful_snipes}</td><td>${s.failed_snipes}</td><td>${s.total_pnl.toFixed(2)}</td>`;
+      }
+      if(msg.startsWith("PARAMS_UPDATED ")) {
+        const p = JSON.parse(msg.slice(15).replace(/'/g,'"'));
+        tpMul.value    = p.take_profit_multiplier;
+        slMul.value    = p.stop_loss_multiplier;
+        slippage.value = p.slippage_bps;
+        liqTh.value    = p.liquidity_threshold_sol;
+        append(`✅ Paramètres mis à jour`);
+      }
+      append(msg);
+    };
+    ws.onopen = ()=>{ append('🔌 WS connecté'); loadInitial(); };
+    ws.onclose= ()=>append('⚠️ WS déconnecté');
+
+    function append(t){
+      const p=document.createElement('p');
+      p.textContent=t;
+      logEl.appendChild(p);
+      logEl.scrollTop=logEl.scrollHeight;
+    }
+
+    async function loadInitial(){
+      let rs = await fetch('/stats'), js = await rs.json();
+      statsRow.innerHTML = `<td>${js.total_snipes}</td><td>${js.successful_snipes}</td><td>${js.failed_snipes}</td><td>${js.total_pnl.toFixed(2)}</td>`;
+      let rp = await fetch('/params'), pj = await rp.json();
+      tpMul.value    = pj.take_profit_multiplier;
+      slMul.value    = pj.stop_loss_multiplier;
+      slippage.value = pj.slippage_bps;
+      liqTh.value    = pj.liquidity_threshold_sol;
+    }
+
     async function startBot(){
-      startBtn.disabled=true; append('→ Envoi START…');
-      let r=await fetch('/bot/start',{method:'POST'}),d=await r.json();
-      append(`✅ Start: ${d.status}`); if(d.status==='started')stopBtn.disabled=false; else startBtn.disabled=false;
+      startBtn.disabled=true; append('→ Démarrage…');
+      let r=await fetch('/bot/start',{method:'POST'}), d=await r.json();
+      append(`✅ Start: ${d.status}`); if(d.status==='started') stopBtn.disabled=false; else startBtn.disabled=false;
     }
     async function stopBot(){
-      stopBtn.disabled=true; append('→ Envoi STOP…');
-      let r=await fetch('/bot/stop',{method:'POST'}),d=await r.json();
-      append(`✅ Stop: ${d.status}`); if(d.status==='stopped')startBtn.disabled=false; else stopBtn.disabled=false;
+      stopBtn.disabled=true; append('→ Arrêt…');
+      let r=await fetch('/bot/stop',{method:'POST'}), d=await r.json();
+      append(`✅ Stop: ${d.status}`); if(d.status==='stopped') startBtn.disabled=false; else stopBtn.disabled=false;
+    }
+
+    async function updateParams(e){
+      e.preventDefault();
+      append('→ Mise à jour paramètres…');
+      let body = {
+        take_profit_multiplier: parseFloat(tpMul.value),
+        stop_loss_multiplier: parseFloat(slMul.value),
+        slippage_bps: parseInt(slippage.value),
+        liquidity_threshold_sol: parseFloat(liqTh.value)
+      };
+      let r = await fetch('/params', {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json' },
+        body: JSON.stringify(body)
+      });
+      append(`🚀 Params sauvegardés`);
     }
   </script>
 </body>
