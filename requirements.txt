@@ -1,10 +1,18 @@
-solana==0.22.0
-websockets<11.0,>=10.1
+# requirements.txt
+
 python-dotenv==1.0.0
 ruamel.yaml==0.17.21
+websockets==10.4
 requests==2.31.0
-numpy>=1.24.0
-pydantic<2.0.0
-fastapi>=0.95.0
-uvicorn>=0.22.0
+
+# Solana / Jupiter
+solana==0.22.0
+httpx==0.23.3
+
+# Bot utils
 pytest==7.4.0
+
+# Dashboard
+fastapi==0.95.2
+uvicorn==0.22.0
+pydantic==1.10.12

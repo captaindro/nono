@@ -1,0 +1,83 @@
+diff --git a/.env b/.env
+index abcdef0..1234567 100644
+--- a/.env
++++ b/.env
+@@ -1,7 +1,20 @@
+########################################
+ # Variables d’environnement pour le Bot NONO
+ ########################################
+
+-# (Ancien contenu...)
++# Choisissez l’environnement : 'mainnet' ou 'devnet'
++ENVIRONMENT=mainnet
++
++# Clé API Helius (identique pour mainnet et devnet)
++HEL_API_KEY=75c7c75c-0230-482e-af0e-f2860324e474
++
++# Endpoints Mainnet
++RPC_URL_MAINNET=https://mainnet.helius-rpc.com/?api-key=${HEL_API_KEY}
++WS_URL_MAINNET=wss://mainnet.helius-rpc.com/?api-key=${HEL_API_KEY}
++
++# Endpoints Devnet
++RPC_URL_DEVNET=https://devnet.helius-rpc.com/?api-key=${HEL_API_KEY}
++WS_URL_DEVNET=wss://devnet.helius-rpc.com/?api-key=${HEL_API_KEY}
++
++# Chemin vers le wallet JSON (clé privée)
++WALLET_PATH=wallets/wallet.json
++
++# Clé publique du wallet (pour simulation honeypot)
++YOUR_PUBLIC_KEY=4ACfpUFoaSD9bfPdeu6DBt89gB6ENTeHBXCAi87NhDEE
++
++# Token Railway CLI (pour CI/CD et start.sh)
++RAILWAY_TOKEN=fce25eff-ccef-418b-a9bd-e891a1a4f70b
+diff --git a/.github/workflows/deploy.yml b/.github/workflows/deploy.yml
+index abcdef0..1234567 100644
+--- a/.github/workflows/deploy.yml
++++ b/.github/workflows/deploy.yml
+@@ -1,5 +1,5 @@
+ name: CI & Deploy to Railway
+
+-on:
+-  push:
+-    branches:
+-      - main
++on:
++  push:
++    branches:
++      - main
+@@ -15,7 +15,7 @@ jobs:
+       - name: Install Railway CLI
+         run: curl -sSL https://railway.app/install.sh | sh
+
+-      - name: Deploy service "nono"
+-        run: railway up --service nono
++      - name: Deploy service "nono"
++        run: railway up --service nono
+         env:
+           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+diff --git a/railway.json b/railway.json
+index abcdef0..1234567 100644
+--- a/railway.json
++++ b/railway.json
+@@ -1,5 +1,17 @@
+ {
+   "$schema": "https://railway.com/railway.schema.json",
++  "projectId": "d594651f-0024-4331-a738-6ef98b1a3405",
++  "projectToken": "fce25eff-ccef-418b-a9bd-e891a1a4f70b",
+   "build": {
+     "builder": "NIXPACKS"
+   },
++  "deploy": {
++    "runtime": "V2",
++    "numReplicas": 1,
++    "sleepApplication": false,
++    "multiRegionConfig": {
++      "europe-west4-drams3a": {
++        "numReplicas": 1
++      }
++    },
++    "restartPolicyType": "ON_FAILURE",
++    "restartPolicyMaxRetries": 10,
++    "startCommand": "./start.sh"
++  }
+ }

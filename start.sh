@@ -1,8 +1,21 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -eo pipefail
 
-# 1️⃣ Active le virtualenv
-source /opt/venv/bin/activate
+# Aller à la racine du projet
+cd "$(dirname "$0")"
 
-# 2️⃣ Lance le bot en production
-python main.py
+# Active l'environnement Python
+if [ -d "newvenv" ]; then
+  source newvenv/bin/activate
+elif [ -d "venv" ]; then
+  source venv/bin/activate
+else
+  echo "⚠️ Aucun venv trouvé (newvenv/venv)"
+fi
+
+# Installe les dépendances (utile si requirements ont changé)
+pip install --upgrade pip
+pip install -r requirements.txt
+
+# Lance le bot NONO
+exec python main.py
