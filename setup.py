@@ -14,6 +14,7 @@ setup(
         "ruamel.yaml==0.17.21",
         "requests==2.31.0",
         "numpy>=1.24.0",
+        "pydantic<2.0.0",      # <=== pin ici aussi
         "fastapi>=0.95.0",
         "uvicorn>=0.22.0"
     ],

@@ -1,33 +1,43 @@
-name: 🧪 CI Tests
+name: CI & Deploy to Railway
 
 on:
   push:
-    branches: [ main ]
-
-permissions:
-  contents: read
+    branches:
+      - main
 
 jobs:
   test:
-    name: Run pytest
+    name: 🧪 Run Tests
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Setup Python 3.12
+      - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.12'
-
-      - name: Install dependencies & package
+      
+      - name: Install dependencies
         run: |
-          pip install --upgrade pip
+          python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install -e .
-
-      - name: Expose project root to PYTHONPATH
-        run: echo "PYTHONPATH=${{ github.workspace }}" >> $GITHUB_ENV
 
       - name: Run pytest
         run: pytest -q
+
+  deploy:
+    name: 🚀 Deploy to Railway
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Deploy to Railway
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: railway up --service nono
