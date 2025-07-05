@@ -3,41 +3,44 @@
 import json
 import time
 import logging
+from typing import Any, Optional, Tuple
 
 log = logging.getLogger("nono.parser")
 
-def parse_msg(raw: str) -> tuple[str, float]:
+def _find_pubkey(obj: Any) -> Optional[str]:
     """
-    Parse un message JSON reçu du WebSocket Helius Pump.fun.
+    Parcourt récursivement un dict ou list pour trouver la première valeur associée à la clé 'pubkey'.
+    """
+    if isinstance(obj, dict):
+        for k, v in obj.items():
+            if k == "pubkey" and isinstance(v, str):
+                return v
+            found = _find_pubkey(v)
+            if found:
+                return found
+    elif isinstance(obj, list):
+        for item in obj:
+            found = _find_pubkey(item)
+            if found:
+                return found
+    return None
 
-    Gère à la fois :
-     - getProgramAccounts → {"jsonrpc":"2.0","id":...,"result":[{...}, ...]}
-     - subscription       → {"jsonrpc":"2.0","method":"accountNotification","params":{"result":{...},"subscription":...}}
+def parse_msg(raw: str) -> Tuple[str, float]:
+    """
+    Parse un message JSON brut provenant du WebSocket Helius Pump.fun.
+    Renvoie toujours (token_address, timestamp).
 
-    Retourne (token_address, receipt_timestamp).
+    Cherche simplement la première occurence de 'pubkey' dans le message.
     """
     try:
         data = json.loads(raw)
     except json.JSONDecodeError as e:
         raise ValueError(f"JSON invalide: {e}")
 
-    # Cas 1 : result est une liste (RPC WS getProgramAccounts)
-    if isinstance(data.get("result"), list):
-        lst = data["result"]
-        if not lst:
-            raise ValueError("Liste 'result' vide")
-        first = lst[0]
-        token_address = first.get("pubkey")
-        if not token_address:
-            raise ValueError("Pas de 'pubkey' dans result[0]")
-    # Cas 2 : subscription (accountNotification)
-    elif "params" in data and isinstance(data["params"].get("result"), dict):
-        res = data["params"]["result"]
-        token_address = res.get("pubkey") or res.get("account", {}).get("owner")  # owner fallback
-        if not token_address:
-            raise ValueError("Pas de 'pubkey' dans params.result")
-    else:
-        raise ValueError("Format de message WS inattendu")
+    token_address = _find_pubkey(data)
+    if not token_address:
+        log.debug(f"Raw message: {raw}")
+        raise ValueError("Impossible de trouver 'pubkey' dans le message WS")
 
     creation_ts = time.time()
     log.debug(f"Parsed token={token_address}, ts={creation_ts}")
