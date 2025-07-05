@@ -1,24 +1,17 @@
 # utils/tp_sl.py
 
-def compute_tp_sl(entry_price: float, settings: dict) -> tuple[float, float]:
+def calculate_tp_sl(entry_price: float,
+                    tp_multiplier: float = 1.1,
+                    sl_multiplier: float = 0.8) -> tuple[float, float]:
     """
-    Calcule le prix de Take Profit (TP) et Stop Loss (SL) à partir du prix d'entrée
-    et des paramètres de volatilité dans settings.
+    Calcule les prix de Take Profit (TP) et Stop Loss (SL) à partir du prix d'entrée.
+    
+    - entry_price : prix d'achat
+    - tp_multiplier : coefficient pour TP (ex. 1.1 pour +10%)
+    - sl_multiplier : coefficient pour SL (ex. 0.8 pour -20%)
+    
+    Retourne un tuple (tp, sl).
     """
-    vol_cfg = settings.get('volatility', {})
-    use_dyn = vol_cfg.get('use_dynamic', False)
-    mult   = vol_cfg.get('multiplier', 1.0)
-
-    if use_dyn:
-        # TODO : remplacer ce stub par un calcul réel de la volatilité
-        # (e.g. via oracles Pyth/Switchboard ou données Helius)
-        # ici on simule une volatilité de base de 5%
-        base_vol = 0.05
-        vol = base_vol * mult
-    else:
-        # volatilité statique de 10% si non-dynamique
-        vol = 0.10
-
-    tp_price = entry_price * (1 + vol)
-    sl_price = entry_price * (1 - vol)
-    return tp_price, sl_price
+    tp = entry_price * tp_multiplier
+    sl = entry_price * sl_multiplier
+    return tp, sl
