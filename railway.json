@@ -1,19 +1,7 @@
 {
   "$schema": "https://railway.com/railway.schema.json",
-  "build": {
-    "builder": "NIXPACKS"
-  },
-  "deploy": {
-    "runtime": "V2",
-    "numReplicas": 1,
-    "sleepApplication": false,
-    "multiRegionConfig": {
-      "europe-west4-drams3a": {
-        "numReplicas": 1
-      }
-    },
-    "restartPolicyType": "ON_FAILURE",
-    "restartPolicyMaxRetries": 10,
-    "startCommand": "./start.sh"
-  }
+  "projectId": "d594651f-0024-4331-a738-6ef98b1a3405",
+  "serviceId": "<ton-service-id-nono>",
+  "build": { /*…*/ },
+  "deploy": { /*…*/ }
 }

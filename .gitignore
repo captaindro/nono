@@ -1,3 +1,23 @@
-# Ignorer les fichiers sensibles
+# Python venvs
+venv/
+newvenv/
 .env
-wallets/
+
+# IDE / editor files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.ipynb_checkpoints
+
+# Railway & CI
+.railway/
+*.egg-info/
+.nixpacks/
+
+# macOS
+.DS_Store
+
+# Logs
+logs/
+*.log
