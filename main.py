@@ -30,8 +30,38 @@ ENV    = os.getenv("ENVIRONMENT", "mainnet").lower()
 WS_URL = os.getenv("WS_URL_MAINNET") if ENV == "mainnet" else os.getenv("WS_URL_DEVNET")
 WALLET_PATH = os.getenv("WALLET_PATH")
 
-# Programme Pump.fun
-PUMP_FUN_PROGRAM_ID = "PumpFun1zzzzzzzzzzzzzzzzzzzzzzzzzzzz"
+# main.py
+
+# … vos imports …
+import asyncio
+import websockets
+import json
+import logging
+# …
+
+# ── Modifiez cette ligne ────────────────────────────────────────────────
+PUMP_FUN_PROGRAM_ID = "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"
+# ────────────────────────────────────────────────────────────────────────
+
+async def websocket_listener():
+    uri = os.getenv("WS_URL")
+    async with websockets.connect(uri) as ws:
+        # on souscrit au programme Pump.fun
+        subscribe_msg = {
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "programSubscribe",
+            "params": [
+                PUMP_FUN_PROGRAM_ID,
+                {
+                    "encoding": "jsonParsed",
+                    "filters": [{"dataSize": 165}]
+                }
+            ]
+        }
+        await ws.send(json.dumps(subscribe_msg))
+        logging.info(f"▶️ programSubscribe → {PUMP_FUN_PROGRAM_ID}")
+        # … suite de votre code …
 
 # Logging
 logging.basicConfig(

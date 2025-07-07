@@ -4,15 +4,14 @@ python-dotenv==1.0.0
 ruamel.yaml==0.17.21
 websockets==10.4
 requests==2.31.0
-
-# Solana / Jupiter
 solana==0.22.0
 httpx==0.23.3
-
-# Bot utils
 pytest==7.4.0
 
 # Dashboard
 fastapi==0.95.2
 uvicorn==0.22.0
 pydantic==1.10.12
+
+# Calculs
+numpy==1.25.2
