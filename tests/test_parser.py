@@ -46,8 +46,9 @@ def test_parse_msg_with_valid_data():
 
 def test_parse_msg_with_missing_fields():
     msg = json.dumps({"random": "data"})
-    with pytest.raises(ValueError, match="Impossible de trouver 'pubkey'"):
-        parse_msg(msg)
+    mint, timestamp = parse_msg(msg)
+    assert mint is None
+    assert timestamp is None
 
 
 def test_parse_msg_with_none_result():
