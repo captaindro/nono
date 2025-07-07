@@ -1,5 +1,8 @@
 # requirements.txt
 
+setuptools>=42
+wheel
+
 python-dotenv==1.0.0
 ruamel.yaml==0.17.21
 websockets==10.4
@@ -14,4 +17,4 @@ uvicorn==0.22.0
 pydantic==1.10.12
 
 # Calculs
-numpy==1.25.2
+numpy==2.3.1  # compatible Python 3.12

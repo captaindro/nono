@@ -1,1 +1,1 @@
-web: python src/snipe.py
+worker: python main.py

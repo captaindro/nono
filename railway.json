@@ -1,7 +1,5 @@
 {
   "$schema": "https://railway.com/railway.schema.json",
-  "projectId": "d594651f-0024-4331-a738-6ef98b1a3405",
-  "serviceId": "<ton-service-id-nono>",
-  "build": { /*…*/ },
-  "deploy": { /*…*/ }
+  "projectId": "6fed8635-d89a-4a6f-ad6b-5866169b9580",
+  "serviceId": "31a4c3e4-4ec4-4ab8-b4ac-1b5849bb4ab1"
 }
