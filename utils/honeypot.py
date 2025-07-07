@@ -1,22 +1,38 @@
+import httpx
+import logging
 import os
-import requests
+
+log = logging.getLogger("honeypot")
 
 JUPITER_SIM_URL = "https://quote-api.jup.ag/v4/swap/simulate"
 
-def is_honeypot(token_mint: str, amount: int, slippage_bps: int = 50) -> bool:
-    payload = {
-        "mintIn": token_mint,
-        "mintOut": "So11111111111111111111111111111111111111112",
-        "amount": amount,
-        "slippageBps": slippage_bps,
-        "userPublicKey": os.getenv("YOUR_PUBLIC_KEY")
-    }
+async def is_honeypot(token_mint: str, amount: int) -> bool:
+    """
+    Vérifie si un token est un honeypot en utilisant l'API de simulation de Jupiter.
+    Retourne True si le swap échoue (donc possiblement un honeypot), False sinon.
+    """
     try:
-        resp = requests.get(JUPITER_SIM_URL, params=payload, timeout=5)
-        data = resp.json()
-    except:
-        return True
+        url = (
+            f"{JUPITER_SIM_URL}"
+            f"?mintIn={token_mint}"
+            f"&mintOut=So11111111111111111111111111111111111111112"
+            f"&amount={amount}"
+            f"&slippageBps={os.getenv('slippage_bps', 50)}"
+            f"&userPublicKey={os.getenv('WALLET_PUBLIC_KEY')}"
+        )
 
-    success = data.get("success", False)
-    out_amount = data.get("data", {}).get("outAmount", 0)
-    return not success or out_amount <= 0
+        log.debug(f"🔍 Simulate honeypot: {url}")
+
+        async with httpx.AsyncClient(timeout=3) as client:
+            response = await client.get(url)
+
+        # Considérer comme honeypot si erreur HTTP
+        if response.status_code != 200:
+            log.error(f"{token_mint}: ❌ Simulate status={response.status_code}")
+            return True
+
+        return False
+
+    except Exception as e:
+        log.error(f"{token_mint}: ❌ Exception pendant is_honeypot: {e}")
+        return True

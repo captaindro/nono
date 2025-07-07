@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import os
 import time
 import json
@@ -15,55 +14,26 @@ from utils.liquidity import get_liquidity
 from utils.tp_sl import calculate_tp_sl
 from utils.scoring import score_token
 from utils.jupiter import execute_swap
+from utils.creator_tracker import record_token_creation, is_suspicious, mark_token_as_rug
 
 from solana.keypair import Keypair
 
-# Paramètres dynamiques
 TP_MULTIPLIER = float(os.getenv("take_profit_multiplier", 1.1))
 SL_MULTIPLIER = float(os.getenv("stop_loss_multiplier", 0.8))
 SLIPPAGE_BPS  = int(os.getenv("slippage_bps", 50))
 LIQ_THRESH    = float(os.getenv("liquidity_threshold_sol", 0.5))
 SCORE_THRESH  = float(os.getenv("token_score_threshold", 0.7))
+BLOCK_SUSPICIOUS_CREATORS = os.getenv("BLOCK_SUSPICIOUS_CREATORS", "true").lower() == "true"
 
-# Environnement
-ENV    = os.getenv("ENVIRONMENT", "mainnet").lower()
-WS_URL = os.getenv("WS_URL_MAINNET") if ENV == "mainnet" else os.getenv("WS_URL_DEVNET")
-WALLET_PATH = os.getenv("WALLET_PATH")
+ENV          = os.getenv("ENVIRONMENT", "mainnet").lower()
+WS_URL       = os.getenv("WS_URL_MAINNET") if ENV == "mainnet" else os.getenv("WS_URL_DEVNET")
+WALLET_PATH  = os.getenv("WALLET_PATH")
+SWAP_AMOUNT_LAMPORTS = int(os.getenv("swap_amount_lamports", 10_000_000))
 
-# main.py
-
-# … vos imports …
-import asyncio
 import websockets
-import json
-import logging
-# …
 
-# ── Modifiez cette ligne ────────────────────────────────────────────────
 PUMP_FUN_PROGRAM_ID = "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"
-# ────────────────────────────────────────────────────────────────────────
 
-async def websocket_listener():
-    uri = os.getenv("WS_URL")
-    async with websockets.connect(uri) as ws:
-        # on souscrit au programme Pump.fun
-        subscribe_msg = {
-            "jsonrpc": "2.0",
-            "id": 1,
-            "method": "programSubscribe",
-            "params": [
-                PUMP_FUN_PROGRAM_ID,
-                {
-                    "encoding": "jsonParsed",
-                    "filters": [{"dataSize": 165}]
-                }
-            ]
-        }
-        await ws.send(json.dumps(subscribe_msg))
-        logging.info(f"▶️ programSubscribe → {PUMP_FUN_PROGRAM_ID}")
-        # … suite de votre code …
-
-# Logging
 logging.basicConfig(
     level=logging.DEBUG,
     format="%(asctime)s %(levelname)s %(message)s"
@@ -71,13 +41,25 @@ logging.basicConfig(
 log = logging.getLogger("nono")
 
 async def get_volatility_estimate(_):
-    return 0.02  # stub
+    return 0.02
 
-async def handle_new_token(token_address: str, creation_ts: float):
+async def handle_new_token(token_address: str, creation_ts: float, creator_wallet: str = None):
     log.info(f"👉 Nouveau token détecté : {token_address}")
 
-    if await is_honeypot(token_address):
-        log.info(f"{token_address}: honeypot détecté, skip")
+    if creator_wallet:
+        record_token_creation(creator_wallet)
+        if BLOCK_SUSPICIOUS_CREATORS and is_suspicious(creator_wallet):
+            log.warning(f"{token_address}: créateur {creator_wallet} suspect, ignoré")
+            return
+
+    try:
+        if await is_honeypot(token_address, SWAP_AMOUNT_LAMPORTS):
+            log.info(f"{token_address}: honeypot détecté, skip")
+            if creator_wallet:
+                mark_token_as_rug(creator_wallet)
+            return
+    except Exception as e:
+        log.warning(f"{token_address}: erreur honeypot check: {e}")
         return
 
     liquidity  = await get_liquidity(token_address)
@@ -90,13 +72,10 @@ async def handle_new_token(token_address: str, creation_ts: float):
         log.info(f"{token_address}: score {tok_score:.3f} < seuil {SCORE_THRESH}, skip")
         return
 
-    # Calcul TP/SL
-    entry_price = 1.0  # placeholder
+    entry_price = 1.0
     tp, sl = calculate_tp_sl(entry_price, TP_MULTIPLIER, SL_MULTIPLIER)
     log.info(f"{token_address}: TP={tp:.3f}, SL={sl:.3f}")
 
-    # Exécution du swap via Jupiter
-    # Charge le signer depuis WALLET_PATH
     kp_bytes = json.loads(Path(WALLET_PATH).read_text())
     signer = Keypair.from_secret_key(bytes(kp_bytes))
     ok = await execute_swap(
@@ -104,15 +83,18 @@ async def handle_new_token(token_address: str, creation_ts: float):
         wallet_signer=signer,
         input_mint="So11111111111111111111111111111111111111112",
         output_mint=token_address,
-        amount=int(1e9),
+        amount=SWAP_AMOUNT_LAMPORTS,
         slippage_bps=SLIPPAGE_BPS
     )
+
     if not ok:
         log.error(f"{token_address}: swap échoué")
+        if creator_wallet:
+            mark_token_as_rug(creator_wallet)
         return
 
-    # Envoi d'un event au dashboard
-    exit_price = entry_price * TP_MULTIPLIER  # placeholder
+    await asyncio.sleep(3)
+    exit_price = entry_price * TP_MULTIPLIER
     pnl = exit_price - entry_price
     try:
         requests.post(
@@ -124,8 +106,6 @@ async def handle_new_token(token_address: str, creation_ts: float):
         log.warning(f"Erreur envoi stats: {e}")
 
 async def websocket_listener():
-    import websockets
-
     if not WS_URL or not WS_URL.startswith(("ws://", "wss://")):
         log.error(f"WS_URL invalide : {WS_URL!r}")
         return
@@ -134,7 +114,6 @@ async def websocket_listener():
     async with websockets.connect(WS_URL) as ws:
         log.info("✅ WS connecté")
 
-        # programSubscribe Pump.fun
         msg = {
             "jsonrpc": "2.0",
             "id": 1,
@@ -163,11 +142,13 @@ async def websocket_listener():
             parsed = value.get("account", {}).get("data", {}).get("parsed", {})
             info   = parsed.get("info", {})
             token_address = info.get("mint")
+            creator_wallet = info.get("owner")
+
             if not token_address:
                 log.debug(f"Notif sans mint: {raw}")
                 continue
 
-            await handle_new_token(token_address, time.time())
+            await handle_new_token(token_address, time.time(), creator_wallet)
 
 async def main():
     log.info("🚀 Démarrage du bot NONO")
