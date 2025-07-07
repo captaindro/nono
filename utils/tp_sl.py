@@ -1,17 +1,18 @@
-# utils/tp_sl.py
+import asyncio
+import logging
+from utils.swap import execute_sell
 
-def calculate_tp_sl(entry_price: float,
-                    tp_multiplier: float = 1.1,
-                    sl_multiplier: float = 0.8) -> tuple[float, float]:
+log = logging.getLogger(__name__)
+
+async def monitor_token(token_address: str, buy_amount_lamports: int, buy_price: float):
     """
-    Calcule les prix de Take Profit (TP) et Stop Loss (SL) à partir du prix d'entrée.
-    
-    - entry_price : prix d'achat
-    - tp_multiplier : coefficient pour TP (ex. 1.1 pour +10%)
-    - sl_multiplier : coefficient pour SL (ex. 0.8 pour -20%)
-    
-    Retourne un tuple (tp, sl).
+    Revente automatique après 3 secondes, utilisée pour tests ou stratégie rapide.
     """
-    tp = entry_price * tp_multiplier
-    sl = entry_price * sl_multiplier
-    return tp, sl
+    log.info(f"⏱️ Attente 3s avant revente du token {token_address}")
+    await asyncio.sleep(3)
+    
+    try:
+        tx = await execute_sell(token_address)
+        log.info(f"✅ Token {token_address} revendu avec succès : {tx}")
+    except Exception as e:
+        log.error(f"❌ Erreur lors de la revente de {token_address} : {e}")

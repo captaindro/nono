@@ -1,6 +1,5 @@
-# tests/test_parser.py
-
 import json
+import pytest
 from utils.parser import parse_msg
 
 def test_parse_msg_with_valid_notification():
@@ -16,11 +15,11 @@ def test_parse_msg_with_valid_notification():
         }
     })
     result = parse_msg(msg)
-    assert isinstance(result, dict)
-    assert result["mint"] == "DummyMintAddress"
+    assert isinstance(result, tuple)
+    assert result[0] == "DummyMintAddress"
+    assert isinstance(result[1], float)
 
 def test_parse_msg_with_missing_fields():
-    # si le JSON ne contient pas les champs attendus, on doit obtenir mint=None
     msg = json.dumps({"random": "data"})
-    result = parse_msg(msg)
-    assert result["mint"] is None
+    with pytest.raises(ValueError, match="Impossible de trouver 'pubkey'"):
+        parse_msg(msg)

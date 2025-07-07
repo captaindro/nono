@@ -6,7 +6,16 @@ TRACKER_FILE = Path("creator_stats.json")
 
 if not TRACKER_FILE.exists():
     TRACKER_FILE.write_text(json.dumps({}))
-
+def mark_token_as_rug(creator: str):
+    """
+    Marque un wallet comme rugger confirmé (score élevé forcé).
+    """
+    stats = load_stats()
+    creator_data = stats.get(creator, {"count": 0, "last": time.time(), "score": 0})
+    creator_data["score"] = 100  # Score très élevé
+    stats[creator] = creator_data
+    save_stats(stats)
+    log.info(f"💀 Rug confirmé : {creator} → score mis à 100")
 
 def load_data():
     return json.loads(TRACKER_FILE.read_text())

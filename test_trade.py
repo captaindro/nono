@@ -1,18 +1,14 @@
-import time
-import logging
-import asyncio
-
+from utils.creator_tracker import record_token_creation
 from main import handle_new_token
+import asyncio, time
 
-# Configure le logging si ce n’est pas fait
-logging.basicConfig(level=logging.DEBUG, format="%(asctime)s %(levelname)s %(message)s")
+async def test_live():
+    mint = "4k3Dyjzvzp8eZZKCDs98U7KxYpYxYqP9JrhG4VvFSCi6"
+    creator = "JBYTEiKue7TdNMWtSKUZwyyRpHpTV9UKgkioQP4JttPn"
+    # Incrémente le score du créateur (si besoin) :
+    record_token_creation(creator, is_rug=False)
 
-# Mint du token à tester (remplace par un mint réel de Pump.fun)
-token_mint = "EPCtgmcgkvhhn63iyqbfrpjkyesvkooxf8zi9vdoac4j"
+    print("📌 Créateur enregistré :", creator)
+    await handle_new_token(mint, time.time(), creator)
 
-async def test_manual_mint():
-    print(f"🚀 Test achat/revente forcé sur {token_mint}")
-    await handle_new_token(token_mint, time.time())
-
-if __name__ == "__main__":
-    asyncio.run(test_manual_mint())
+asyncio.run(test_live())
