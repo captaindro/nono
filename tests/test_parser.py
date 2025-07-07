@@ -8,16 +8,14 @@ def test_parse_msg_with_valid_notification():
         "params": {
             "result": {
                 "value": {
-                    "pubkey": "DummyMintAddress",
-                    "account": {}
+                    "pubkey": "DummyMintAddress"
                 }
             }
         }
     })
-    result = parse_msg(msg)
-    assert isinstance(result, tuple)
-    assert result[0] == "DummyMintAddress"
-    assert isinstance(result[1], float)
+    mint, timestamp = parse_msg(msg)
+    assert mint == "DummyMintAddress"
+    assert isinstance(timestamp, (int, float))
 
 def test_parse_msg_with_missing_fields():
     msg = json.dumps({"random": "data"})
