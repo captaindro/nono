@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Bot NONO
 
 [...]
@@ -35,7 +34,6 @@
 ## Usage
 
 [...]
-=======
 # Projet NONO - Bot Sniping Solana Pump.fun
 
 ## Description
@@ -64,4 +62,3 @@ python test_handle.py
 - Construction complète des transactions swap selon Jupiter routes
 - Gestion des erreurs réseaux et retry avancé
 - Tests automatisés et monitoring
->>>>>>> 2553739 (Ajout de la config Railway et du workflow CI/CD)

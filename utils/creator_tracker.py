@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import json
 from collections import defaultdict
 from pathlib import Path
@@ -50,7 +49,6 @@ def get_creator_score(wallet: str) -> float:
 
 def is_suspicious(wallet: str, threshold: float = 0.4) -> bool:
     return get_creator_score(wallet) < threshold
-=======
 import logging
 
 logger = logging.getLogger("creator_tracker")
@@ -83,4 +81,3 @@ def get_creator_info(creator_address: str):
 
 def is_rugger(creator_address: str) -> bool:
     return creator_tracker.is_suspicious(creator_address)
->>>>>>> 2553739 (Ajout de la config Railway et du workflow CI/CD)

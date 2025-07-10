@@ -1,6 +1,5 @@
 # utils/liquidity.py
 
-<<<<<<< HEAD
 import os
 from solana.rpc.api import Client
 
@@ -40,7 +39,6 @@ def get_liquidity(token_mint: str) -> float:
 
     lamports = value.get('lamports', 0)
     return lamports / 1e9
-=======
 import logging
 
 logger = logging.getLogger("liquidity")
@@ -57,4 +55,3 @@ def check_liquidity(token_address: str) -> float:
     fake_liquidity = 1.0  # en SOL, à ajuster selon ta logique
 
     return fake_liquidity
->>>>>>> 2553739 (Ajout de la config Railway et du workflow CI/CD)

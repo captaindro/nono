@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import logging
 import asyncio
 
@@ -13,7 +12,6 @@ async def sell_token(mint: str, amount: float):
     log.info(f"💰 Vente simulée de {amount} {mint}")
     await asyncio.sleep(1)
     return True
-=======
 # utils/jup_swap.py
 
 import base64
@@ -150,4 +148,3 @@ async def execute_swap(
     except Exception as e:
         logger.exception(f"[JUPITER] Erreur dans execute_swap ({side.upper()}): {e}")
         return None
->>>>>>> 2553739 (Ajout de la config Railway et du workflow CI/CD)

@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import asyncio
 import json
 import logging
@@ -111,7 +110,6 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
-=======
 # main.py
 
 import asyncio
@@ -185,4 +183,3 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
->>>>>>> 2553739 (Ajout de la config Railway et du workflow CI/CD)

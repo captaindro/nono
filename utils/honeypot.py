@@ -1,5 +1,4 @@
 import logging
-<<<<<<< HEAD
 import httpx
 
 log = logging.getLogger("utils.honeypot")
@@ -17,7 +16,6 @@ async def is_honeypot(mint: str, amount: float) -> bool:
     except Exception as e:
         log.error(f"{mint}: erreur simulation Jupiter: {e}")
         return True
-=======
 
 logger = logging.getLogger("honeypot")
 def check_honeypot(token_address: str) -> bool:
@@ -29,4 +27,3 @@ def check_honeypot(token_address: str) -> bool:
     
     # Logique de test temporaire : toujours non-honeypot
     return False
->>>>>>> 2553739 (Ajout de la config Railway et du workflow CI/CD)
