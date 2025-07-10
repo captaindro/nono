@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import json
 from collections import defaultdict
 from pathlib import Path
@@ -49,3 +50,37 @@ def get_creator_score(wallet: str) -> float:
 
 def is_suspicious(wallet: str, threshold: float = 0.4) -> bool:
     return get_creator_score(wallet) < threshold
+=======
+import logging
+
+logger = logging.getLogger("creator_tracker")
+
+# Exemple simplifié d'un tracker des créateurs suspects
+class CreatorTracker:
+    def __init__(self):
+        # Cette liste devrait être chargée depuis un fichier ou base persistante
+        self.suspicious_creators = set([
+            "SomeSuspiciousWalletAddress1",
+            "SomeSuspiciousWalletAddress2",
+            # ... ajouter les autres créateurs suspects
+        ])
+
+    def is_suspicious(self, creator_address: str) -> bool:
+        return creator_address in self.suspicious_creators
+
+creator_tracker = CreatorTracker()
+
+def get_creator_info(creator_address: str):
+    # Exemple : retourne un dict avec infos sur le créateur
+    # Ici simplifié, tu peux étendre avec plus de données
+    is_rugger = creator_tracker.is_suspicious(creator_address)
+    info = {
+        "address": creator_address,
+        "is_rugger": is_rugger,
+    }
+    logger.debug(f"Créateur info pour {creator_address}: {info}")
+    return info
+
+def is_rugger(creator_address: str) -> bool:
+    return creator_tracker.is_suspicious(creator_address)
+>>>>>>> 2553739 (Ajout de la config Railway et du workflow CI/CD)

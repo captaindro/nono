@@ -1,5 +1,18 @@
+<<<<<<< HEAD
 {
   "$schema": "https://railway.com/railway.schema.json",
   "projectId": "6fed8635-d89a-4a6f-ad6b-5866169b9580",
   "serviceId": "31a4c3e4-4ec4-4ab8-b4ac-1b5849bb4ab1"
 }
+=======
+{
+  "build": {
+    "env": {
+      "PYTHON_VERSION": "3.12"
+    }
+  },
+  "deploy": {
+    "startCommand": "uvicorn app:app --host 0.0.0.0 --port 8080"
+  }
+}
+>>>>>>> 2553739 (Ajout de la config Railway et du workflow CI/CD)

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Bot NONO
 
 [...]
@@ -34,3 +35,33 @@
 ## Usage
 
 [...]
+=======
+# Projet NONO - Bot Sniping Solana Pump.fun
+
+## Description
+Bot Python async pour sniping automatique de tokens Solana via Pump.fun avec intégration Jupiter API.
+
+## Structure
+- `utils/trade.py` : logique principale d'analyse et achat
+- `utils/jup_swap.py` : interaction API Jupiter et swap
+- `wallets/wallet.py` : gestion wallet clé privée
+- `test_handle.py` : tests simples de fonctionnalité
+
+## Installation
+```
+pip install -r requirements.txt
+```
+
+## Usage
+```
+python test_handle.py
+```
+
+---
+
+## Prochaines améliorations
+- Récupération réelle et fiable du token info (Magic Eden / pump.fun)
+- Construction complète des transactions swap selon Jupiter routes
+- Gestion des erreurs réseaux et retry avancé
+- Tests automatisés et monitoring
+>>>>>>> 2553739 (Ajout de la config Railway et du workflow CI/CD)

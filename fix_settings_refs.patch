@@ -1,0 +1,11 @@
+*** Begin Patch
+*** Update File: utils/jup_swap.py
+@@
+
+      quote_url = f"{settings.jupiter_api_url}/v6/swap"
+@@
+
+        # envoi via Helius RPC (variable rpc_helius)
+
+           async with AsyncClient(settings.rpc_helius) as client:
+*** End Patch

@@ -1,0 +1,39 @@
+import os
+import csv
+import logging
+from datetime import datetime
+from config.settings import config
+
+logger = logging.getLogger("logs")
+
+def log_trade_to_csv(token_address: str, gain: float, signature: str, wallet_pubkey: str):
+    """
+    Enregistre une transaction dans un fichier CSV si activé dans la config.
+    :param token_address: mint du token concerné
+    :param gain: montant de gain (en SOL, peut être négatif)
+    :param signature: tx hash
+    :param wallet_pubkey: wallet utilisé pour l'action
+    """
+    if not config.csv_output_enabled:
+        logger.debug("✏️ CSV logging désactivé.")
+        return
+
+    try:
+        csv_path = config.csv_output_path or "logs/transactions.csv"
+        os.makedirs(os.path.dirname(csv_path), exist_ok=True)
+
+        file_exists = os.path.isfile(csv_path)
+        with open(csv_path, mode='a', newline='') as file:
+            writer = csv.writer(file)
+            if not file_exists:
+                writer.writerow(["timestamp", "token", "gain_sol", "signature", "wallet_pubkey"])
+            writer.writerow([
+                datetime.utcnow().isoformat(),
+                token_address,
+                round(gain, 6),
+                signature,
+                wallet_pubkey
+            ])
+        logger.info(f"📝 Trade loggé dans {csv_path}")
+    except Exception as e:
+        logger.exception(f"❌ Erreur lors de l’écriture du fichier CSV : {e}")

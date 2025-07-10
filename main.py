@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import asyncio
 import json
 import logging
@@ -110,3 +111,78 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+=======
+# main.py
+
+import asyncio
+from dotenv import load_dotenv
+
+# Charger .env **avant** tout import de config/settings
+load_dotenv()
+
+import os
+from config.settings import settings
+from config.log_config import setup_logger
+from utils.notifier import send_email_notification
+from helius_mint_listener import listen_for_mint_tokens
+from scraper import start_scraper
+
+logger = setup_logger()
+
+
+async def handle_token_event(token_address: str, creator_address: str = None):
+    try:
+        logger.info(f"📦 Nouveau token détecté : {token_address}")
+
+        # Traiter l’achat + revente
+        from core.trading import try_buy_and_sell  # importer ici pour éviter circular import
+        from utils.token_utils import get_token_name
+
+        token_name = await get_token_name(token_address)
+        wallet_used, success = await try_buy_and_sell(token_address)
+
+        if success:
+            logger.success(f"✅ Achat/Revente réussi pour {token_name} ({token_address})")
+            if not settings.simulate_only:
+                send_email_notification(
+                    subject="✅ Achat/Revente effectuée",
+                    message=f"Le bot a acheté et revendu {token_name} ({token_address}) avec le wallet {wallet_used}."
+                )
+        else:
+            logger.warning(f"❌ Échec pour {token_name} ({token_address})")
+            send_email_notification(
+                subject="❌ Échec swap/revente",
+                message=f"Le bot a échoué sur le token {token_name} ({token_address}) avec le wallet {wallet_used}."
+            )
+
+    except Exception as e:
+        logger.error(f"❌ Erreur critique sur {token_address}", exc_info=True)
+        send_email_notification(
+            subject="⚠️ Erreur critique",
+            message=f"Erreur pendant le traitement du token {token_address} :\n\n{e}"
+        )
+
+
+async def main():
+    logger.info("🚀 Lancement du bot NONO...")
+
+    tasks = []
+    if settings.scraper_enabled:
+        tasks.append(asyncio.create_task(start_scraper(handle_token_event)))
+    tasks.append(asyncio.create_task(listen_for_mint_tokens(handle_token_event)))
+
+    try:
+        # Boucle principale
+        while True:
+            await asyncio.sleep(60)
+    except KeyboardInterrupt:
+        logger.info("🛑 Arrêt demandé, annulation des tâches…")
+        for t in tasks:
+            t.cancel()
+        await asyncio.gather(*tasks, return_exceptions=True)
+        logger.info("✅ Bot arrêté proprement.")
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
+>>>>>>> 2553739 (Ajout de la config Railway et du workflow CI/CD)

@@ -1,0 +1,67 @@
+import asyncio
+import httpx
+import json
+import os
+
+from utils.config import SCRAPER_ENABLED, SCRAPER_INTERVAL_SECONDS, PUMPFUN_BOARD_URL
+from utils.logger import get_logger  # ✅ le bon module
+logger = get_logger("scraper")       # ✅ instanciation correcte
+
+
+SEEN_MINTS_FILE = "data/seen_mints.json"
+seen_mints = set()
+
+def load_seen_mints():
+    if os.path.exists(SEEN_MINTS_FILE):
+        try:
+            with open(SEEN_MINTS_FILE, "r") as f:
+                return set(json.load(f))
+        except Exception:
+            logger.warning("Impossible de charger seen_mints.json", exc_info=True)
+    return set()
+
+def save_seen_mints():
+    try:
+        with open(SEEN_MINTS_FILE, "w") as f:
+            json.dump(list(seen_mints), f)
+    except Exception:
+        logger.warning("Erreur lors de la sauvegarde de seen_mints.json", exc_info=True)
+
+async def fetch_new_tokens():
+    try:
+        async with httpx.AsyncClient(timeout=5) as client:
+            response = await client.get(PUMPFUN_BOARD_URL)
+            response.raise_for_status()
+            data = response.json()
+            return data.get("tokens", [])
+    except Exception:
+        logger.error("Erreur lors du scraping Pump.fun", exc_info=True)
+        return []
+
+async def scraper_loop(callback):
+    global seen_mints
+    if not SCRAPER_ENABLED:
+        logger.info("Scraper désactivé dans .env")
+        return
+
+    seen_mints = load_seen_mints()
+    logger.info(f"{len(seen_mints)} mints déjà vus chargés depuis {SEEN_MINTS_FILE}")
+    logger.info("Scraper Pump.fun démarré...")
+
+    while True:
+        try:
+            tokens = await fetch_new_tokens()
+            new_detected = 0
+            for token in tokens:
+                mint = token.get("mint")
+                if mint and mint not in seen_mints:
+                    seen_mints.add(mint)
+                    new_detected += 1
+                    logger.info(f"Token détecté via Scraper: {mint}")
+                    await callback(mint)
+            if new_detected > 0:
+                save_seen_mints()
+        except Exception:
+            logger.error("Erreur dans scraper_loop", exc_info=True)
+
+        await asyncio.sleep(SCRAPER_INTERVAL_SECONDS)

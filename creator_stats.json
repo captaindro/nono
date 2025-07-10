@@ -1,6 +1,16 @@
 {
+<<<<<<< HEAD
   "JBYTEiKue7TdNMWtSKUZwyyRpHpTV9UKgkioQP4JttPn": {
     "created": 24,
     "rugged": 1
   }
 }
+=======
+  "6jRZqHTnLApA4vVrAYQECnAgsELSoHCLMYKzmjmcF8uW": {
+    "score": 10,
+    "rug_count": 2,
+    "total_created": 2,
+    "tokens": ["cDkTvtXwJLqAS5NqpiwoTT2cbe6GkPBfBwkb5kppump"]
+  }
+}
+>>>>>>> 2553739 (Ajout de la config Railway et du workflow CI/CD)

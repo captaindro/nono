@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # utils/reinvest.py
 
 import os
@@ -39,3 +40,16 @@ def record_gain(gain: float):
     state = load_state()
     state['balance'] = state.get('balance', 0) + gain
     save_state(state)
+=======
+import logging
+
+logger = logging.getLogger(__name__)
+
+def reinvest_profits(profits_amount: float, reinvest_percentage: float) -> float:
+    """
+    Calcule la somme à réinvestir en fonction des profits et du pourcentage de réinvestissement.
+    """
+    reinvest_amount = profits_amount * (reinvest_percentage / 100)
+    logger.info(f"[reinvest] Montant réinvesti: {reinvest_amount} sur profits de {profits_amount}")
+    return reinvest_amount
+>>>>>>> 2553739 (Ajout de la config Railway et du workflow CI/CD)
